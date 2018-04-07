@@ -1,17 +1,18 @@
-package infrastructure
+package database
 
 import (
+	"simple-note-api/domain"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/guregu/dynamo"
-	"simple-note-api/domain"
 )
 
-type SimpleNoteDatabase struct {
+type DynamoDBHandler struct {
 	UserTable dynamo.Table
 }
 
-func NewSimpleNoteDatabase() *SimpleNoteDatabase {
+func NewDynamoDBHandler() *DynamoDBHandler {
 	dbSession, err := session.NewSession()
 	if err != nil {
 		panic(err)
@@ -20,12 +21,12 @@ func NewSimpleNoteDatabase() *SimpleNoteDatabase {
 		Region: aws.String("ap-northeast-1"),
 	})
 
-	return &SimpleNoteDatabase{
+	return &DynamoDBHandler{
 		UserTable: db.Table("simple-note_users"),
 	}
 }
 
-func (database *SimpleNoteDatabase) GetAllUsers() ([]domain.User, error) {
+func (database *DynamoDBHandler) GetAllUsers() ([]domain.User, error) {
 	var results []domain.User
 	err := database.UserTable.Scan().All(&results)
 

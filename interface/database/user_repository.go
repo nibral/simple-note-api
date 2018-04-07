@@ -2,23 +2,23 @@ package database
 
 import (
 	"simple-note-api/domain"
-	"simple-note-api/infrastructure"
-	"sort"
+	"simple-note-api/infrastructure/database"
 	"simple-note-api/util"
+	"sort"
 )
 
 type UserRepository struct {
-	SimpleNoteDatabase SimpleNoteDatabaseInterface
+	DatabaseHandler DatabaseHandlerInterface
 }
 
 func NewUserRepository() *UserRepository {
 	return &UserRepository{
-		SimpleNoteDatabase: infrastructure.NewSimpleNoteDatabase(),
+		DatabaseHandler: database.NewDynamoDBHandler(),
 	}
 }
 
 func (repository *UserRepository) FindAll() ([]domain.User, error) {
-	users, err := repository.SimpleNoteDatabase.GetAllUsers()
+	users, err := repository.DatabaseHandler.GetAllUsers()
 	sort.Sort(util.SortUserById(users))
 	return users, err
 }

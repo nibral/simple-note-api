@@ -1,12 +1,13 @@
 package main
 
 import (
+	"simple-note-api/infrastructure/network"
+
 	"github.com/labstack/echo/middleware"
-	"simple-note-api/interface/controller"
 )
 
 func main() {
-	router := controller.NewRouter()
+	router := network.Router
 
 	router.Use(middleware.Logger())
 	router.Use(middleware.Recover())

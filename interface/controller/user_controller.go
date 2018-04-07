@@ -1,10 +1,11 @@
 package controller
 
 import (
-	"simple-note-api/usecase"
-	"simple-note-api/interface/database"
-	"github.com/labstack/echo"
 	"net/http"
+	"simple-note-api/interface/database"
+	"simple-note-api/usecase"
+
+	"github.com/labstack/echo"
 )
 
 type UserController struct {
