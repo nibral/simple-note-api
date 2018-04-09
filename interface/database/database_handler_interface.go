@@ -2,6 +2,6 @@ package database
 
 import "simple-note-api/domain"
 
-type DatabaseHandlerInterface interface {
+type HandlerInterface interface {
 	GetAllUsers() ([]domain.User, error)
 }

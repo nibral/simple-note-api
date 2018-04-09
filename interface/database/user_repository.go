@@ -8,7 +8,7 @@ import (
 )
 
 type UserRepository struct {
-	DatabaseHandler DatabaseHandlerInterface
+	DatabaseHandler HandlerInterface
 }
 
 func NewUserRepository() *UserRepository {
