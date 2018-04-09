@@ -3,23 +3,13 @@ package controller
 import (
 	"net/http/httptest"
 	"testing"
-	"simple-note-api/domain"
 	"github.com/labstack/echo"
 	"simple-note-api/usecase"
 	"net/http"
 )
 
-type MockUserRepository struct{}
-
-func (_ MockUserRepository) FindAll() ([]domain.User, error) {
-	users := []domain.User{
-		{1, "foo", ""},
-	}
-	return users, nil
-}
-
 func TestUserController_Index(t *testing.T) {
-	json := `[{"id":1,"name":"foo"}]`
+	json := `[{"id":1,"name":"foo"},{"id":2,"name":"bar"},{"id":3,"name":"baz"}]`
 
 	e := echo.New()
 	req := httptest.NewRequest(echo.GET, "/", nil)
@@ -29,7 +19,7 @@ func TestUserController_Index(t *testing.T) {
 
 	controller := UserController{
 		Interactor: usecase.UserInteractor{
-			UserRepository: &MockUserRepository{},
+			UserRepository: &usecase.MockUserRepository{},
 		},
 	}
 	err := controller.Index(c)

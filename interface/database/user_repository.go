@@ -22,3 +22,7 @@ func (repository *UserRepository) FindAll() ([]domain.User, error) {
 	sort.Sort(util.SortUserById(users))
 	return users, err
 }
+
+func (repository *UserRepository) FindByName(name string) (domain.User, error) {
+	return repository.DatabaseHandler.GetUserByName(name)
+}

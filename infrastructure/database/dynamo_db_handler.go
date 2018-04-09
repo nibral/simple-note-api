@@ -32,3 +32,14 @@ func (database *DynamoDBHandler) GetAllUsers() ([]domain.User, error) {
 
 	return results, err
 }
+
+func (database *DynamoDBHandler) GetUserByName(name string) (domain.User, error) {
+	var results []domain.User
+	err := database.UserTable.Scan().Filter("'name' = ?", name).All(&results)
+
+	if len(results) == 0 {
+		return domain.User{}, nil
+	}
+
+	return results[0], err
+}

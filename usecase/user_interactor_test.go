@@ -2,19 +2,7 @@ package usecase
 
 import (
 	"testing"
-	"simple-note-api/domain"
 )
-
-type MockUserRepository struct{}
-
-func (_ MockUserRepository) FindAll() ([]domain.User, error) {
-	users := []domain.User{
-		{1, "foo", ""},
-		{2, "bar", ""},
-		{3, "baz", ""},
-	}
-	return users, nil
-}
 
 func TestUserInteractor_Users(t *testing.T) {
 	interactor := UserInteractor{
