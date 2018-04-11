@@ -2,23 +2,23 @@ package controller
 
 import (
 	"testing"
-	"github.com/labstack/echo"
-	"net/http/httptest"
 	"strings"
-	"simple-note-api/usecase"
+	"encoding/json"
+	"net/http/httptest"
 	"net/http"
+	"simple-note-api/usecase"
+	"github.com/labstack/echo"
 )
 
 func TestLoginController_Login(t *testing.T) {
 	paramJson := `{"name":"foo","password":"password"}`
-	responseJson := `{"id":1,"name":"foo"}`
 
 	e := echo.New()
 	req := httptest.NewRequest(echo.POST, "/", strings.NewReader(paramJson))
 	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
-	c.SetPath("/login")
+	c.SetPath("/v1/login")
 
 	controller := LoginController{
 		Interactor: usecase.LoginInteractor{
@@ -35,7 +35,14 @@ func TestLoginController_Login(t *testing.T) {
 		t.Fatalf("unexpected status: %v", rec.Code)
 	}
 
-	if rec.Body.String() != responseJson {
-		t.Fatalf("unexpected json response: %v", rec.Body.String())
+	result := new(loginResult)
+	jsonErr := json.Unmarshal(rec.Body.Bytes(), result)
+
+	if jsonErr != nil {
+		t.Fatal(jsonErr)
+	}
+
+	if result.ID != 1 {
+		t.Fatalf("user id expected 1, but got %v", result.ID)
 	}
 }

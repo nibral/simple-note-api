@@ -16,6 +16,12 @@ type loginParams struct {
 	Password string `json:"password"`
 }
 
+type loginResult struct {
+	ID    int    `json:"id"`
+	Name  string `json:"name"`
+	Token string `json:"token"`
+}
+
 func NewLoginController() *LoginController {
 	return &LoginController{
 		Interactor: usecase.LoginInteractor{
@@ -30,11 +36,16 @@ func (controller *LoginController) Login(context echo.Context) error {
 		return context.NoContent(http.StatusBadRequest)
 	}
 
-	user, _, err := controller.Interactor.Login(params.Name, params.Password)
+	user, token, err := controller.Interactor.Login(params.Name, params.Password)
 
 	if err != nil {
 		return echo.ErrUnauthorized
 	}
 
-	return context.JSON(http.StatusOK, user)
+	result := loginResult{
+		ID:    user.ID,
+		Name:  user.Name,
+		Token: token,
+	}
+	return context.JSON(http.StatusOK, result)
 }

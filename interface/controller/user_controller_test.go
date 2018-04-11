@@ -15,7 +15,7 @@ func TestUserController_Index(t *testing.T) {
 	req := httptest.NewRequest(echo.GET, "/", nil)
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
-	c.SetPath("/users")
+	c.SetPath("/v1/users")
 
 	controller := UserController{
 		Interactor: usecase.UserInteractor{
