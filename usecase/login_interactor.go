@@ -9,6 +9,7 @@ import (
 )
 
 type LoginInteractor struct {
+	Config         domain.Config
 	UserRepository UserRepositoryInterface
 }
 
@@ -26,8 +27,8 @@ func (interactor *LoginInteractor) Login(name string, password string) (domain.U
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["name"] = user.Name
-	claims["exp"] = time.Now().Add(time.Minute * 1).Unix()
-	t, err := token.SignedString([]byte("secret"))
+	claims["exp"] = time.Now().Add(time.Duration(interactor.Config.JwtLifetime) * time.Second).Unix()
+	t, err := token.SignedString([]byte(interactor.Config.JwtSecret))
 	if err != nil {
 		return domain.User{}, "", err
 	}

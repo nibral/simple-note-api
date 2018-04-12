@@ -2,6 +2,7 @@ package controller
 
 import (
 	"net/http"
+	"simple-note-api/domain"
 	"simple-note-api/usecase"
 	"simple-note-api/interface/database"
 	"github.com/labstack/echo"
@@ -22,9 +23,10 @@ type loginResult struct {
 	Token string `json:"token"`
 }
 
-func NewLoginController() *LoginController {
+func NewLoginController(config domain.Config) *LoginController {
 	return &LoginController{
 		Interactor: usecase.LoginInteractor{
+			Config:         config,
 			UserRepository: database.NewUserRepository(),
 		},
 	}

@@ -3,6 +3,9 @@
 .vscode/
 vendor
 
+# config file
+config.json
+
 # Binaries for programs and plugins
 *.exe
 *.exe~

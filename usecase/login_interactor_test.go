@@ -1,9 +1,15 @@
 package usecase
 
-import "testing"
+import (
+	"testing"
+	"simple-note-api/domain"
+)
 
 func TestLoginInteractor_Login(t *testing.T) {
 	interactor := LoginInteractor{
+		Config: domain.Config{
+			JwtSecret: "secret",
+		},
 		UserRepository: &MockUserRepository{},
 	}
 
