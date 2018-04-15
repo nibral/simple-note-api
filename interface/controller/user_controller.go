@@ -1,10 +1,10 @@
 package controller
 
 import (
+	"log"
 	"net/http"
 	"simple-note-api/interface/database"
 	"simple-note-api/usecase"
-
 	"github.com/labstack/echo"
 )
 
@@ -23,6 +23,7 @@ func NewUserController() *UserController {
 func (controller *UserController) Index(context echo.Context) error {
 	users, err := controller.Interactor.Users()
 	if err != nil {
+		log.Println(err)
 		return context.NoContent(http.StatusInternalServerError)
 	}
 	return context.JSON(http.StatusOK, users)
