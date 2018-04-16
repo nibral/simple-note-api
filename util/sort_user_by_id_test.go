@@ -8,9 +8,9 @@ import (
 
 func TestSortUserById(t *testing.T) {
 	users := []domain.User{
-		{3, "baz", ""},
-		{1, "foo", ""},
-		{2, "bar", ""},
+		{3, "baz", "", false},
+		{1, "foo", "", true},
+		{2, "bar", "", false},
 	}
 
 	sort.Sort(SortUserById(users))

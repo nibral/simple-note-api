@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"testing"
+	"simple-note-api/domain"
 )
 
 func TestUserInteractor_Users(t *testing.T) {
@@ -21,5 +22,26 @@ func TestUserInteractor_Users(t *testing.T) {
 
 	if users[0].ID != 1 || users[1].ID != 2 || users[2].ID != 3 {
 		t.Fatalf("sorted by incorrect order: %+v", users)
+	}
+}
+
+func TestUserInteractor_Add(t *testing.T) {
+	interactor := UserInteractor{
+		UserRepository: &MockUserRepository{},
+	}
+
+	param := domain.User{
+		Name:     "qux",
+		Password: "password",
+		Admin:    false,
+	}
+	user, err := interactor.Create(param)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if user.ID != 4 {
+		t.Fatalf("ID of new user expected 4, but got %v", user.ID)
 	}
 }

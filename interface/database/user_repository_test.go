@@ -2,6 +2,7 @@ package database
 
 import (
 	"testing"
+	"simple-note-api/domain"
 )
 
 func TestUserRepository_FindAll(t *testing.T) {
@@ -47,5 +48,26 @@ func TestUserRepository_FindByName(t *testing.T) {
 
 	if user2.ID != 0 {
 		t.Fatalf("not exist user: %+v", user2)
+	}
+}
+
+func TestUserRepository_Add(t *testing.T) {
+	repository := UserRepository{
+		DatabaseHandler: &MockDatabaseHandler{},
+	}
+
+	param := domain.User{
+		Name:     "qux",
+		Password: "password",
+		Admin:    false,
+	}
+	user, err := repository.Add(param)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if user.ID != 4 {
+		t.Fatalf("user id expected 4, but got %v.", user.ID)
 	}
 }

@@ -9,7 +9,12 @@ import (
 )
 
 type DynamoDBHandler struct {
-	UserTable dynamo.Table
+	SequenceTable dynamo.Table
+	UserTable     dynamo.Table
+}
+
+type Sequence struct {
+	Current int `dynamo:"current"`
 }
 
 func NewDynamoDBHandler() *DynamoDBHandler {
@@ -22,7 +27,8 @@ func NewDynamoDBHandler() *DynamoDBHandler {
 	})
 
 	return &DynamoDBHandler{
-		UserTable: db.Table("simple-note_users"),
+		SequenceTable: db.Table("simple-note_sequences"),
+		UserTable:     db.Table("simple-note_users"),
 	}
 }
 
@@ -38,4 +44,17 @@ func (database *DynamoDBHandler) GetUserByName(name string) (domain.User, error)
 	err := database.UserTable.Get("name", name).Index("name-index").One(&result)
 
 	return result, err
+}
+
+func (database *DynamoDBHandler) GetNewUserID() (int, error) {
+	var result Sequence
+	err := database.SequenceTable.Update("name", "simple-note_users").Add("current", 1).Value(&result)
+
+	return result.Current, err
+}
+
+func (database *DynamoDBHandler) AddUser(param domain.User) error {
+	err := database.UserTable.Put(param).Run()
+
+	return err
 }

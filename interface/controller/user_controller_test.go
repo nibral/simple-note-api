@@ -6,6 +6,9 @@ import (
 	"github.com/labstack/echo"
 	"simple-note-api/usecase"
 	"net/http"
+	"strings"
+	"github.com/dgrijalva/jwt-go"
+	"time"
 )
 
 func TestUserController_Index(t *testing.T) {
@@ -34,5 +37,49 @@ func TestUserController_Index(t *testing.T) {
 
 	if rec.Body.String() != json {
 		t.Fatalf("unexpected json response: %v", rec.Body.String())
+	}
+}
+
+func TestUserController_Create(t *testing.T) {
+	paramJson := `{"name":"qux","password":"password"}`
+	userJson := `{"id":4,"name":"qux"}`
+
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["name"] = "foo"
+	claims["admin"] = true
+	claims["exp"] = time.Now().Add(1 * time.Minute).Unix()
+
+	e := echo.New()
+	req := httptest.NewRequest(echo.POST, "/", strings.NewReader(paramJson))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.SetPath("/v1/users")
+	c.Set("user", token)
+
+	controller := UserController{
+		Interactor: usecase.UserInteractor{
+			UserRepository: &usecase.MockUserRepository{},
+		},
+	}
+	err := controller.Create(c)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if rec.Code != http.StatusCreated {
+		t.Fatalf("unexpected status: %v", rec.Code)
+	}
+
+	if rec.Body.String() != userJson {
+		t.Fatalf("unexpected json response: %v", rec.Body.String())
+	}
+
+	users, err := controller.Interactor.Users()
+
+	if len(users) != 4 {
+		t.Fatalf("number of users expected 4, but got %v", len(users))
 	}
 }

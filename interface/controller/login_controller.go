@@ -51,6 +51,7 @@ func (controller *LoginController) Login(context echo.Context) error {
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["name"] = user.Name
+	claims["admin"] = user.Admin
 	claims["exp"] = time.Now().Add(time.Duration(controller.Config.JwtLifetime) * time.Second).Unix()
 	t, err := token.SignedString([]byte(controller.Config.JwtSecret))
 	if err != nil {
