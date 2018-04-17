@@ -7,11 +7,16 @@ import (
 	"simple-note-api/usecase"
 	"github.com/labstack/echo"
 	"simple-note-api/domain"
-	"github.com/dgrijalva/jwt-go"
 )
 
 type UserController struct {
 	Interactor usecase.UserInteractor
+}
+
+type userParams struct {
+	Name     string `json:"name"`
+	Password string `json:"password"`
+	Admin    bool   `json:"admin"`
 }
 
 func NewUserController() *UserController {
@@ -23,7 +28,9 @@ func NewUserController() *UserController {
 }
 
 func (controller *UserController) Index(context echo.Context) error {
-	users, err := controller.Interactor.Users()
+	sender := ParseToken(context)
+
+	users, err := controller.Interactor.Users(sender)
 	if err != nil {
 		log.Println(err)
 		return context.NoContent(http.StatusInternalServerError)
@@ -32,24 +39,26 @@ func (controller *UserController) Index(context echo.Context) error {
 }
 
 func (controller *UserController) Create(context echo.Context) error {
-	sender := context.Get("user").(*jwt.Token)
-	claims := sender.Claims.(jwt.MapClaims)
-	admin := claims["admin"].(bool)
-	if !admin {
-		return context.NoContent(http.StatusForbidden)
-	}
+	sender := ParseToken(context)
 
-	userParam := domain.User{}
-	if err := context.Bind(&userParam); err != nil {
+	params := userParams{}
+	if err := context.Bind(&params); err != nil {
 		return context.NoContent(http.StatusBadRequest)
 	}
+	userParam := domain.User{
+		Name:     params.Name,
+		Password: params.Password,
+		Admin:    params.Admin,
+	}
 
-	user, err := controller.Interactor.Create(userParam)
+	user, err := controller.Interactor.Create(sender, userParam)
 	if err != nil {
 		log.Println(err)
-		switch err.(type) {
+		switch e := err.(type) {
+		case *usecase.NotPermittedError:
+			return context.String(http.StatusForbidden, e.Msg)
 		case *usecase.UserCreateError:
-			return context.NoContent(http.StatusBadRequest)
+			return context.String(http.StatusBadRequest, e.Msg)
 		default:
 			return context.NoContent(http.StatusInternalServerError)
 		}

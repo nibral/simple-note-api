@@ -5,12 +5,18 @@ import (
 	"simple-note-api/domain"
 )
 
+var sender = domain.User{
+	ID:    1,
+	Name:  "foo",
+	Admin: true,
+}
+
 func TestUserInteractor_Users(t *testing.T) {
 	interactor := UserInteractor{
 		UserRepository: &MockUserRepository{},
 	}
 
-	users, err := interactor.Users()
+	users, err := interactor.Users(sender)
 
 	if err != nil {
 		t.Fatal(err)
@@ -35,7 +41,7 @@ func TestUserInteractor_Add(t *testing.T) {
 		Password: "password",
 		Admin:    false,
 	}
-	user, err := interactor.Create(param)
+	user, err := interactor.Create(sender, param)
 
 	if err != nil {
 		t.Fatal(err)

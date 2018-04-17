@@ -40,8 +40,16 @@ func (database *DynamoDBHandler) GetAllUsers() ([]domain.User, error) {
 }
 
 func (database *DynamoDBHandler) GetUserByName(name string) (domain.User, error) {
+	count, err := database.UserTable.Get("name", name).Index("name-index").Count()
+	if err != nil {
+		return domain.User{}, err
+	}
+	if count == 0 {
+		return domain.User{}, nil
+	}
+
 	var result domain.User
-	err := database.UserTable.Get("name", name).Index("name-index").One(&result)
+	err = database.UserTable.Get("name", name).Index("name-index").One(&result)
 
 	return result, err
 }
