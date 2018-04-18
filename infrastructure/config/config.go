@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"io/ioutil"
+
 	"simple-note-api/domain"
 )
 

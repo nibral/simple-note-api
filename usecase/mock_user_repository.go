@@ -20,19 +20,20 @@ func (_ MockUserRepository) FindAll() ([]domain.User, error) {
 }
 
 func (_ MockUserRepository) FindByName(name string) (domain.User, error) {
-	if name == "foo" {
-		return users[0], nil
-	} else {
-		return domain.User{}, nil
+	for _, v := range users {
+		if v.Name == name {
+			return v, nil
+		}
 	}
+	return domain.User{}, nil
 }
 
 func (_ MockUserRepository) Add(user domain.User) (domain.User, error) {
 	users = append(users, domain.User{
-		ID:       4,
+		ID:       len(users) + 1,
 		Name:     user.Name,
 		Password: "",
 		Admin:    user.Admin,
 	})
-	return users[3], nil
+	return users[len(users)-1], nil
 }

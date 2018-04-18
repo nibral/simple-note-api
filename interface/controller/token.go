@@ -2,12 +2,11 @@ package controller
 
 import (
 	"simple-note-api/domain"
-	"github.com/labstack/echo"
+
 	"github.com/dgrijalva/jwt-go"
 )
 
-func ParseToken(context echo.Context) (domain.User) {
-	token := context.Get("user").(*jwt.Token)
+func ParseToken(token *jwt.Token) (domain.User) {
 	claims := token.Claims.(jwt.MapClaims)
 	user := domain.User{
 		ID:    int(claims["id"].(float64)),

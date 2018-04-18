@@ -1,14 +1,22 @@
 package controller
 
 import (
-	"testing"
-	"strings"
 	"encoding/json"
-	"net/http/httptest"
 	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+
 	"simple-note-api/usecase"
+
 	"github.com/labstack/echo"
 )
+
+var loginController = LoginController{
+	Interactor: usecase.LoginInteractor{
+		UserRepository: &usecase.MockUserRepository{},
+	},
+}
 
 func TestLoginController_Login(t *testing.T) {
 	paramJson := `{"name":"foo","password":"password"}`
@@ -20,29 +28,22 @@ func TestLoginController_Login(t *testing.T) {
 	c := e.NewContext(req, rec)
 	c.SetPath("/v1/login")
 
-	controller := LoginController{
-		Interactor: usecase.LoginInteractor{
-			UserRepository: &usecase.MockUserRepository{},
-		},
-	}
-	err := controller.Login(c)
+	err := loginController.Login(c)
 
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	if rec.Code != http.StatusOK {
 		t.Fatalf("unexpected status: %v", rec.Code)
 	}
 
-	result := new(loginResult)
-	jsonErr := json.Unmarshal(rec.Body.Bytes(), result)
+	actual := loginResult{}
+	jsonErr := json.Unmarshal(rec.Body.Bytes(), &actual)
 
 	if jsonErr != nil {
 		t.Fatal(jsonErr)
 	}
-
-	if result.ID != 1 {
-		t.Fatalf("user id expected 1, but got %v", result.ID)
+	if actual.ID != 1 {
+		t.Fatalf("unexpedted user id: expect 1, actual %v", actual.ID)
 	}
 }

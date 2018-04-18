@@ -39,26 +39,24 @@ func (database *DynamoDBHandler) GetAllUsers() ([]domain.User, error) {
 	return results, err
 }
 
-func (database *DynamoDBHandler) GetUserByName(name string) (domain.User, error) {
-	count, err := database.UserTable.Get("name", name).Index("name-index").Count()
-	if err != nil {
-		return domain.User{}, err
-	}
-	if count == 0 {
-		return domain.User{}, nil
-	}
-
-	var result domain.User
-	err = database.UserTable.Get("name", name).Index("name-index").One(&result)
-
-	return result, err
-}
-
 func (database *DynamoDBHandler) GetNewUserID() (int, error) {
 	var result Sequence
 	err := database.SequenceTable.Update("name", "simple-note_users").Add("current", 1).Value(&result)
 
 	return result.Current, err
+}
+
+func (database *DynamoDBHandler) GetUserByName(name string) (domain.User, error) {
+	var result domain.User
+	err := database.UserTable.Get("name", name).Index("name-index").One(&result)
+
+	return result, err
+}
+
+func (database *DynamoDBHandler) GetUserCountByName(name string) (int, error) {
+	count, err := database.UserTable.Get("name", name).Index("name-index").Count()
+
+	return int(count), err
 }
 
 func (database *DynamoDBHandler) AddUser(param domain.User) error {

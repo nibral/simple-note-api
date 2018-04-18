@@ -1,9 +1,10 @@
 package usecase
 
 import (
-	"errors"
 	"fmt"
+
 	"simple-note-api/domain"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -19,7 +20,7 @@ func (interactor *LoginInteractor) Login(name string, password string) (domain.U
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
-		return domain.User{}, errors.New(fmt.Sprintf("name or password is incorrect: %v, %v", name, password))
+		return domain.User{}, fmt.Errorf("name or password is incorrect: %v, %v", name, password)
 	}
 
 	return user, nil

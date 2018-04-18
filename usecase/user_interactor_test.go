@@ -2,52 +2,64 @@ package usecase
 
 import (
 	"testing"
+
 	"simple-note-api/domain"
 )
 
-var sender = domain.User{
+var senderAdmin = domain.User{
 	ID:    1,
 	Name:  "foo",
 	Admin: true,
 }
+var senderUser = domain.User{
+	ID:    2,
+	Name:  "bar",
+	Admin: false,
+}
+var userInteractor = UserInteractor{
+	UserRepository: &MockUserRepository{},
+}
 
 func TestUserInteractor_Users(t *testing.T) {
-	interactor := UserInteractor{
-		UserRepository: &MockUserRepository{},
-	}
-
-	users, err := interactor.Users(sender)
+	actual, err := userInteractor.Users(senderAdmin)
 
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	if len(users) != 3 {
-		t.Fatalf("number of users expected 3, but got %v", len(users))
+	if len(actual) != 3 {
+		t.Fatalf("unexpected number of users: expect 3, actual %v", len(actual))
 	}
-
-	if users[0].ID != 1 || users[1].ID != 2 || users[2].ID != 3 {
-		t.Fatalf("sorted by incorrect order: %+v", users)
+	if actual[0].ID != 1 || actual[1].ID != 2 || actual[2].ID != 3 {
+		t.Fatalf("sorted by incorrect order: %+v", actual)
 	}
 }
 
 func TestUserInteractor_Add(t *testing.T) {
-	interactor := UserInteractor{
-		UserRepository: &MockUserRepository{},
-	}
-
 	param := domain.User{
 		Name:     "qux",
 		Password: "password",
 		Admin:    false,
 	}
-	user, err := interactor.Create(sender, param)
 
-	if err != nil {
-		t.Fatal(err)
+	actual1, err1 := userInteractor.Create(senderAdmin, param)
+
+	if err1 != nil {
+		t.Fatal(err1)
+	}
+	if actual1.ID != 4 {
+		t.Fatalf("ID of new user expected 4, but got %v", actual1.ID)
 	}
 
-	if user.ID != 4 {
-		t.Fatalf("ID of new user expected 4, but got %v", user.ID)
+	param.Name = "quux"
+	actual2, err2 := userInteractor.Create(senderUser, param)
+
+	if err2 == nil {
+		t.Fatalf("user created without admin privileges: %+v", actual2)
+	}
+	switch err2.(type) {
+	case *NotPermittedError:
+		break
+	default:
+		t.Fatal(err2)
 	}
 }

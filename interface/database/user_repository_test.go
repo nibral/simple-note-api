@@ -2,72 +2,61 @@ package database
 
 import (
 	"testing"
+
 	"simple-note-api/domain"
 )
 
-func TestUserRepository_FindAll(t *testing.T) {
-	repository := UserRepository{
-		DatabaseHandler: &MockDatabaseHandler{},
-	}
+var repository = UserRepository{
+	DatabaseHandler: &MockDatabaseHandler{},
+}
 
-	users, err := repository.FindAll()
+func TestUserRepository_FindAll(t *testing.T) {
+	actual, err := repository.FindAll()
 
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	if len(users) != 3 {
-		t.Fatalf("number of users expected 3, but got %v.", len(users))
+	if len(actual) != 3 {
+		t.Fatalf("unexpected number of users: expect 3, actual %v", len(actual))
 	}
-
-	if users[0].ID != 1 || users[1].ID != 2 || users[2].ID != 3 {
-		t.Fatalf("sorted by incorrect order: %+v", users)
+	if actual[0].ID != 1 || actual[1].ID != 2 || actual[2].ID != 3 {
+		t.Fatalf("sorted by incorrect order: %+v", actual)
 	}
 }
 
 func TestUserRepository_FindByName(t *testing.T) {
-	repository := UserRepository{
-		DatabaseHandler: &MockDatabaseHandler{},
-	}
-
-	user1, err1 := repository.FindByName("foo")
+	actual1, err1 := repository.FindByName("foo")
 
 	if err1 != nil {
 		t.Fatal(err1)
 	}
-
-	if user1.ID != 1 {
-		t.Fatalf("user id expected 1, but got %v.", user1.ID)
+	if actual1.ID != 1 {
+		t.Fatalf("unexpected user id: expect 1, actual %v", actual1.ID)
 	}
 
-	user2, err2 := repository.FindByName("bar")
-
+	actual2, err2 := repository.FindByName("qux")
 	if err2 != nil {
 		t.Fatal(err2)
 	}
-
-	if user2.ID != 0 {
-		t.Fatalf("not exist user: %+v", user2)
+	if actual2.ID != 0 {
+		t.Fatalf("got user by invalid name: %+v", actual2)
 	}
 }
 
 func TestUserRepository_Add(t *testing.T) {
-	repository := UserRepository{
-		DatabaseHandler: &MockDatabaseHandler{},
-	}
-
 	param := domain.User{
 		Name:     "qux",
 		Password: "password",
 		Admin:    false,
 	}
-	user, err := repository.Add(param)
+
+	actual, err := repository.Add(param)
 
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if user.ID != 4 {
-		t.Fatalf("user id expected 4, but got %v.", user.ID)
+	if actual.ID != 4 {
+		t.Fatalf("unexpected user id: expect 4, actual %v(%+v)", actual.ID, actual)
 	}
 }

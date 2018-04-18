@@ -1,10 +1,12 @@
 package database
 
 import (
+	"sort"
+
 	"simple-note-api/domain"
 	"simple-note-api/infrastructure/database"
 	"simple-note-api/util"
-	"sort"
+
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -25,6 +27,14 @@ func (repository *UserRepository) FindAll() ([]domain.User, error) {
 }
 
 func (repository *UserRepository) FindByName(name string) (domain.User, error) {
+	count, err := repository.DatabaseHandler.GetUserCountByName(name)
+	if err != nil {
+		return domain.User{}, err
+	}
+	if count == 0 {
+		return domain.User{}, nil
+	}
+
 	return repository.DatabaseHandler.GetUserByName(name)
 }
 

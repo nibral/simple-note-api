@@ -3,10 +3,13 @@ package controller
 import (
 	"log"
 	"net/http"
+
+	"simple-note-api/domain"
 	"simple-note-api/interface/database"
 	"simple-note-api/usecase"
+
+	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
-	"simple-note-api/domain"
 )
 
 type UserController struct {
@@ -28,7 +31,7 @@ func NewUserController() *UserController {
 }
 
 func (controller *UserController) Index(context echo.Context) error {
-	sender := ParseToken(context)
+	sender := ParseToken(context.Get("user").(*jwt.Token))
 
 	users, err := controller.Interactor.Users(sender)
 	if err != nil {
@@ -39,7 +42,7 @@ func (controller *UserController) Index(context echo.Context) error {
 }
 
 func (controller *UserController) Create(context echo.Context) error {
-	sender := ParseToken(context)
+	sender := ParseToken(context.Get("user").(*jwt.Token))
 
 	params := userParams{}
 	if err := context.Bind(&params); err != nil {

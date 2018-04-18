@@ -1,14 +1,16 @@
 package controller
 
 import (
-	"time"
 	"log"
 	"net/http"
+	"time"
+
 	"simple-note-api/domain"
-	"simple-note-api/usecase"
 	"simple-note-api/interface/database"
-	"github.com/labstack/echo"
+	"simple-note-api/usecase"
+
 	"github.com/dgrijalva/jwt-go"
+	"github.com/labstack/echo"
 )
 
 type LoginController struct {

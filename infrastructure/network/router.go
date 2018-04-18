@@ -1,11 +1,11 @@
 package network
 
 import (
+	"simple-note-api/domain"
 	"simple-note-api/interface/controller"
 
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
-	"simple-note-api/domain"
 )
 
 func NewRouter(config domain.Config) *echo.Echo {

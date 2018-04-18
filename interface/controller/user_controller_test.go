@@ -1,25 +1,33 @@
 package controller
 
 import (
-	"net/http/httptest"
-	"testing"
-	"github.com/labstack/echo"
-	"simple-note-api/usecase"
 	"net/http"
+	"net/http/httptest"
 	"strings"
-	"simple-note-api/domain"
-	"github.com/dgrijalva/jwt-go"
+	"testing"
 	"time"
+
+	"simple-note-api/domain"
+	"simple-note-api/usecase"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/labstack/echo"
 )
+
+var userController = UserController{
+	Interactor: usecase.UserInteractor{
+		UserRepository: &usecase.MockUserRepository{},
+	},
+}
+var sender = domain.User{
+	ID:    1,
+	Name:  "foo",
+	Admin: true,
+}
 
 func TestUserController_Index(t *testing.T) {
 	json := `[{"id":1,"name":"foo"},{"id":2,"name":"bar"},{"id":3,"name":"baz"}]`
 
-	sender := domain.User{
-		ID:    1,
-		Name:  "foo",
-		Admin: true,
-	}
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["id"] = float64(sender.ID)
@@ -34,12 +42,7 @@ func TestUserController_Index(t *testing.T) {
 	c.SetPath("/v1/users")
 	c.Set("user", token)
 
-	controller := UserController{
-		Interactor: usecase.UserInteractor{
-			UserRepository: &usecase.MockUserRepository{},
-		},
-	}
-	err := controller.Index(c)
+	err := userController.Index(c)
 
 	if err != nil {
 		t.Fatal(err)
@@ -58,11 +61,6 @@ func TestUserController_Create(t *testing.T) {
 	paramJson := `{"name":"qux","password":"password"}`
 	userJson := `{"id":4,"name":"qux"}`
 
-	sender := domain.User{
-		ID:    1,
-		Name:  "foo",
-		Admin: true,
-	}
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["id"] = float64(sender.ID)
@@ -78,26 +76,19 @@ func TestUserController_Create(t *testing.T) {
 	c.SetPath("/v1/users")
 	c.Set("user", token)
 
-	controller := UserController{
-		Interactor: usecase.UserInteractor{
-			UserRepository: &usecase.MockUserRepository{},
-		},
-	}
-	err := controller.Create(c)
+	err := userController.Create(c)
 
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	if rec.Code != http.StatusCreated {
 		t.Fatalf("unexpected status: %v", rec.Code)
 	}
-
 	if rec.Body.String() != userJson {
 		t.Fatalf("unexpected json response: %v", rec.Body.String())
 	}
 
-	users, err := controller.Interactor.Users(sender)
+	users, err := userController.Interactor.Users(sender)
 
 	if len(users) != 4 {
 		t.Fatalf("number of users expected 4, but got %v", len(users))
