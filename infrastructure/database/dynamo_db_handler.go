@@ -46,11 +46,24 @@ func (database *DynamoDBHandler) GetNewUserID() (int, error) {
 	return result.Current, err
 }
 
+func (database *DynamoDBHandler) GetUserByID(id int) (domain.User, error) {
+	var result domain.User
+	err := database.UserTable.Get("id", id).One(&result)
+
+	return result, err
+}
+
 func (database *DynamoDBHandler) GetUserByName(name string) (domain.User, error) {
 	var result domain.User
 	err := database.UserTable.Get("name", name).Index("name-index").One(&result)
 
 	return result, err
+}
+
+func (database *DynamoDBHandler) GetUserCountByID(id int) (int, error) {
+	count, err := database.UserTable.Get("id", id).Count()
+
+	return int(count), err
 }
 
 func (database *DynamoDBHandler) GetUserCountByName(name string) (int, error) {
@@ -59,8 +72,18 @@ func (database *DynamoDBHandler) GetUserCountByName(name string) (int, error) {
 	return int(count), err
 }
 
-func (database *DynamoDBHandler) AddUser(param domain.User) error {
-	err := database.UserTable.Put(param).Run()
+func (database *DynamoDBHandler) PutUser(user domain.User) error {
+	err := database.UserTable.Put(user).Run()
+
+	return err
+}
+
+func (database *DynamoDBHandler) UpdateUser(id int, user domain.User) error {
+	err := database.UserTable.Update("id", id).
+		Set("name", user.Name).
+		Set("password", user.Password).
+		Set("admin", user.Admin).
+		Run()
 
 	return err
 }

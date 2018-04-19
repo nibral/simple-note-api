@@ -1,6 +1,10 @@
 package usecase
 
-import "simple-note-api/domain"
+import (
+	"fmt"
+
+	"simple-note-api/domain"
+)
 
 type MockUserRepository struct{}
 
@@ -17,6 +21,15 @@ func init() {
 
 func (_ MockUserRepository) FindAll() ([]domain.User, error) {
 	return users, nil
+}
+
+func (_ MockUserRepository) FindByID(id int) (domain.User, error) {
+	for _, v := range users {
+		if v.ID == id {
+			return v, nil
+		}
+	}
+	return domain.User{}, nil
 }
 
 func (_ MockUserRepository) FindByName(name string) (domain.User, error) {
@@ -36,4 +49,15 @@ func (_ MockUserRepository) Add(user domain.User) (domain.User, error) {
 		Admin:    user.Admin,
 	})
 	return users[len(users)-1], nil
+}
+
+func (_ MockUserRepository) Update(id int, user domain.User) (domain.User, error) {
+	for _, v := range users {
+		if v.ID == id {
+			v = user
+			return v, nil
+		}
+	}
+
+	return domain.User{}, fmt.Errorf("user id %v doesn't exists", user.ID)
 }

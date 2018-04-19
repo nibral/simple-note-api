@@ -5,7 +5,10 @@ import "simple-note-api/domain"
 type HandlerInterface interface {
 	GetAllUsers() ([]domain.User, error)
 	GetNewUserID() (int, error)
+	GetUserByID(id int) (domain.User, error)
 	GetUserByName(name string) (domain.User, error)
+	GetUserCountByID(id int) (int, error)
 	GetUserCountByName(name string) (int, error)
-	AddUser(param domain.User) error
+	PutUser(user domain.User) error
+	UpdateUser(id int, user domain.User) error
 }

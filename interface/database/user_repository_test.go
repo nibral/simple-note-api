@@ -1,17 +1,18 @@
 package database
 
 import (
+	"reflect"
 	"testing"
 
 	"simple-note-api/domain"
 )
 
-var repository = UserRepository{
+var userRepository = UserRepository{
 	DatabaseHandler: &MockDatabaseHandler{},
 }
 
 func TestUserRepository_FindAll(t *testing.T) {
-	actual, err := repository.FindAll()
+	actual, err := userRepository.FindAll()
 
 	if err != nil {
 		t.Fatal(err)
@@ -24,8 +25,27 @@ func TestUserRepository_FindAll(t *testing.T) {
 	}
 }
 
+func TestUserRepository_FindByID(t *testing.T) {
+	actual1, err1 := userRepository.FindByID(1)
+
+	if err1 != nil {
+		t.Fatal(err1)
+	}
+	if actual1.Name != "foo" {
+		t.Fatalf("unexpected user name: expect foo, actual %v", actual1.Name)
+	}
+
+	actual2, err2 := userRepository.FindByID(9)
+	if err2 != nil {
+		t.Fatal(err2)
+	}
+	if actual2.ID != 0 {
+		t.Fatalf("got user by invalid id: %+v", actual2)
+	}
+}
+
 func TestUserRepository_FindByName(t *testing.T) {
-	actual1, err1 := repository.FindByName("foo")
+	actual1, err1 := userRepository.FindByName("foo")
 
 	if err1 != nil {
 		t.Fatal(err1)
@@ -34,7 +54,7 @@ func TestUserRepository_FindByName(t *testing.T) {
 		t.Fatalf("unexpected user id: expect 1, actual %v", actual1.ID)
 	}
 
-	actual2, err2 := repository.FindByName("qux")
+	actual2, err2 := userRepository.FindByName("qux")
 	if err2 != nil {
 		t.Fatal(err2)
 	}
@@ -44,19 +64,42 @@ func TestUserRepository_FindByName(t *testing.T) {
 }
 
 func TestUserRepository_Add(t *testing.T) {
-	param := domain.User{
+	user := domain.User{
+		Name:     "qux",
+		Password: "password",
+		Admin:    false,
+	}
+	expected := domain.User{
+		ID:       4,
 		Name:     "qux",
 		Password: "password",
 		Admin:    false,
 	}
 
-	actual, err := repository.Add(param)
+	actual, err := userRepository.Add(user)
 
 	if err != nil {
 		t.Fatal(err)
 	}
+	if !reflect.DeepEqual(actual, expected) {
+		t.Fatalf("unexpected new user: expected %+v, actual %+v", expected, actual)
+	}
+}
 
-	if actual.ID != 4 {
-		t.Fatalf("unexpected user id: expect 4, actual %v(%+v)", actual.ID, actual)
+func TestUserRepository_Update(t *testing.T) {
+	expected := domain.User{
+		ID:       1,
+		Name:     "foo-ooo",
+		Password: "p@ssw0rd",
+		Admin:    true,
+	}
+
+	actual, err := userRepository.Update(1, expected)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(actual, expected) {
+		t.Fatalf("unexpected updated user: expected %+v, actual %+v", expected, actual)
 	}
 }

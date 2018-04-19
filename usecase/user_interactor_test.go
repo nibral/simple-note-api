@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"reflect"
 	"testing"
 
 	"simple-note-api/domain"
@@ -40,14 +41,20 @@ func TestUserInteractor_Add(t *testing.T) {
 		Password: "password",
 		Admin:    false,
 	}
+	expected1 := domain.User{
+		ID:    4,
+		Name:  "qux",
+		Admin: false,
+	}
 
 	actual1, err1 := userInteractor.Create(senderAdmin, param)
 
 	if err1 != nil {
 		t.Fatal(err1)
 	}
-	if actual1.ID != 4 {
-		t.Fatalf("ID of new user expected 4, but got %v", actual1.ID)
+	actual1.Password = ""
+	if !reflect.DeepEqual(actual1, expected1) {
+		t.Fatalf("unexpected created user: expected %+v, actual %+v", expected1, actual1)
 	}
 
 	param.Name = "quux"
@@ -61,5 +68,81 @@ func TestUserInteractor_Add(t *testing.T) {
 		break
 	default:
 		t.Fatal(err2)
+	}
+}
+
+func TestUserInteractor_Update(t *testing.T) {
+	param := domain.User{
+		Name:  "foo-ooo",
+		Admin: true,
+	}
+	expected1 := domain.User{
+		ID:    1,
+		Name:  "foo-ooo",
+		Admin: true,
+	}
+
+	actual1, err1 := userInteractor.Update(senderAdmin, 1, param)
+	if err1 != nil {
+		t.Fatal(err1)
+	}
+	actual1.Password = ""
+	if !reflect.DeepEqual(actual1, expected1) {
+		t.Fatalf("unexpected updated user: expected %+v, actual %+v", expected1, actual1)
+	}
+
+	actual2, err2 := userInteractor.Update(senderUser, 1, param)
+	if err2 == nil {
+		t.Fatalf("user updated without admin privileges: %+v", actual2)
+	}
+	switch err2.(type) {
+	case *NotPermittedError:
+		break
+	default:
+		t.Fatal(err2)
+	}
+
+	actual3, err3 := userInteractor.Update(senderAdmin, 9, param)
+	if err3 == nil {
+		t.Fatalf("unexpected updated by id = 9 (unused id): %+v", actual3)
+	}
+	switch e := err3.(type) {
+	case *InvalidParameterError:
+		t.Log(e.Msg)
+		break
+	default:
+		t.Fatal(err3)
+	}
+
+	param4 := domain.User{
+		Name:  "bar",
+		Admin: false,
+	}
+	actual4, err4 := userInteractor.Update(senderAdmin, 3, param4)
+	if err4 == nil {
+		t.Fatalf("unexpected updated by name = bar (same name): %+v", actual4)
+	}
+	switch e := err4.(type) {
+	case *InvalidParameterError:
+		t.Log(e.Msg)
+		break
+	default:
+		t.Fatal(err4)
+	}
+
+	param5 := domain.User{
+		Name:  "foo5",
+		Admin: false,
+	}
+	actual5, err5 := userInteractor.Update(senderAdmin, 1, param5)
+	if err5 == nil {
+		t.Fatalf("unexpected updated by id = 1, admin = false (degrade myself): %+v", actual5)
+	}
+	switch e := err5.(type) {
+	case *InvalidParameterError:
+		t.Log(e.Msg)
+		break
+	default:
+		t.Fatal(err5)
 	}
 }

@@ -20,6 +20,7 @@ func NewRouter(config domain.Config) *echo.Echo {
 	users.Use(middleware.JWT([]byte(config.JwtSecret)))
 	users.GET("", userController.Index)
 	users.POST("", userController.Create)
+	users.POST("/:id", userController.Update)
 
 	return router
 }

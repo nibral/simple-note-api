@@ -13,7 +13,7 @@ func TestUser_Marshal(t *testing.T) {
 		Password: "password",
 		Admin:    true,
 	}
-	expected := `{"id":1,"name":"foo"}`
+	expected := `{"id":1,"name":"foo","admin":true}`
 
 	actual, err := json.Marshal(user)
 
@@ -30,8 +30,8 @@ func TestUser_Unmarshal(t *testing.T) {
 	expected := User{
 		ID:       1,
 		Name:     "foo",
-		Password: "",    // marked as ignore
-		Admin:    false, // marked as ignore
+		Password: "", // marked as ignore
+		Admin:    true,
 	}
 
 	var actual User

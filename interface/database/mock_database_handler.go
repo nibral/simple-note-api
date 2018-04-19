@@ -1,7 +1,6 @@
 package database
 
 import (
-	"errors"
 	"fmt"
 
 	"simple-note-api/domain"
@@ -27,13 +26,32 @@ func (_ *MockDatabaseHandler) GetNewUserID() (int, error) {
 	return len(users) + 1, nil
 }
 
+func (_ *MockDatabaseHandler) GetUserByID(id int) (domain.User, error) {
+	for _, v := range users {
+		if v.ID == id {
+			return v, nil
+		}
+	}
+	return domain.User{}, fmt.Errorf("user id %v doesn't exists", id)
+}
+
 func (_ *MockDatabaseHandler) GetUserByName(name string) (domain.User, error) {
 	for _, v := range users {
 		if v.Name == name {
 			return v, nil
 		}
 	}
-	return domain.User{}, errors.New(fmt.Sprintf("%v doesn't exists", name))
+	return domain.User{}, fmt.Errorf("user %v doesn't exists", name)
+}
+
+func (_ *MockDatabaseHandler) GetUserCountByID(id int) (int, error) {
+	count := 0
+	for _, v := range users {
+		if v.ID == id {
+			count = count + 1
+		}
+	}
+	return count, nil
 }
 
 func (_ *MockDatabaseHandler) GetUserCountByName(name string) (int, error) {
@@ -46,6 +64,19 @@ func (_ *MockDatabaseHandler) GetUserCountByName(name string) (int, error) {
 	return count, nil
 }
 
-func (_ *MockDatabaseHandler) AddUser(param domain.User) error {
+func (_ *MockDatabaseHandler) PutUser(user domain.User) error {
+	users = append(users, user)
+
 	return nil
+}
+
+func (_ *MockDatabaseHandler) UpdateUser(id int, user domain.User) error {
+	for _, v := range users {
+		if v.ID == id {
+			v = user
+			return nil
+		}
+	}
+
+	return fmt.Errorf("user id %v doesn't exists", user.ID)
 }

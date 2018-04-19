@@ -3,6 +3,7 @@ package controller
 import (
 	"log"
 	"net/http"
+	"strconv"
 
 	"simple-note-api/domain"
 	"simple-note-api/interface/database"
@@ -60,7 +61,7 @@ func (controller *UserController) Create(context echo.Context) error {
 		switch e := err.(type) {
 		case *usecase.NotPermittedError:
 			return context.String(http.StatusForbidden, e.Msg)
-		case *usecase.UserCreateError:
+		case *usecase.InvalidParameterError:
 			return context.String(http.StatusBadRequest, e.Msg)
 		default:
 			return context.NoContent(http.StatusInternalServerError)
@@ -68,4 +69,38 @@ func (controller *UserController) Create(context echo.Context) error {
 	}
 
 	return context.JSON(http.StatusCreated, user)
+}
+
+func (controller *UserController) Update(context echo.Context) error {
+	sender := ParseToken(context.Get("user").(*jwt.Token))
+
+	id, err := strconv.Atoi(context.Param("id"))
+	if err != nil {
+		return context.NoContent(http.StatusNotFound)
+	}
+
+	params := userParams{}
+	if err := context.Bind(&params); err != nil {
+		return context.NoContent(http.StatusBadRequest)
+	}
+	userParam := domain.User{
+		Name:     params.Name,
+		Password: params.Password,
+		Admin:    params.Admin,
+	}
+
+	user, err := controller.Interactor.Update(sender, id, userParam)
+	if err != nil {
+		log.Println(err)
+		switch e := err.(type) {
+		case *usecase.NotPermittedError:
+			return context.String(http.StatusForbidden, e.Msg)
+		case *usecase.InvalidParameterError:
+			return context.String(http.StatusBadRequest, e.Msg)
+		default:
+			return context.NoContent(http.StatusInternalServerError)
+		}
+	}
+
+	return context.JSON(http.StatusOK, user)
 }

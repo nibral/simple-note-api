@@ -6,8 +6,6 @@ import (
 	"simple-note-api/domain"
 	"simple-note-api/infrastructure/database"
 	"simple-note-api/util"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 type UserRepository struct {
@@ -26,6 +24,18 @@ func (repository *UserRepository) FindAll() ([]domain.User, error) {
 	return users, err
 }
 
+func (repository *UserRepository) FindByID(id int) (domain.User, error) {
+	count, err := repository.DatabaseHandler.GetUserCountByID(id)
+	if err != nil {
+		return domain.User{}, err
+	}
+	if count == 0 {
+		return domain.User{}, nil
+	}
+
+	return repository.DatabaseHandler.GetUserByID(id)
+}
+
 func (repository *UserRepository) FindByName(name string) (domain.User, error) {
 	count, err := repository.DatabaseHandler.GetUserCountByName(name)
 	if err != nil {
@@ -38,19 +48,18 @@ func (repository *UserRepository) FindByName(name string) (domain.User, error) {
 	return repository.DatabaseHandler.GetUserByName(name)
 }
 
-func (repository *UserRepository) Add(param domain.User) (domain.User, error) {
+func (repository *UserRepository) Add(user domain.User) (domain.User, error) {
 	id, err := repository.DatabaseHandler.GetNewUserID()
 	if err != nil {
 		return domain.User{}, err
 	}
-	param.ID = id
+	user.ID = id
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(param.Password), bcrypt.DefaultCost)
-	if err != nil {
-		return domain.User{}, err
-	}
-	param.Password = string(hashedPassword)
+	err = repository.DatabaseHandler.PutUser(user)
+	return user, err
+}
 
-	err = repository.DatabaseHandler.AddUser(param)
-	return param, err
+func (repository *UserRepository) Update(id int, user domain.User) (domain.User, error) {
+	err := repository.DatabaseHandler.UpdateUser(id, user)
+	return user, err
 }
