@@ -34,12 +34,33 @@ func NewUserController() *UserController {
 func (controller *UserController) Index(context echo.Context) error {
 	sender := ParseToken(context.Get("user").(*jwt.Token))
 
-	users, err := controller.Interactor.Users(sender)
+	users, err := controller.Interactor.List(sender)
 	if err != nil {
 		log.Println(err)
 		return context.NoContent(http.StatusInternalServerError)
 	}
 	return context.JSON(http.StatusOK, users)
+}
+
+func (controller *UserController) Get(context echo.Context) error {
+	sender := ParseToken(context.Get("user").(*jwt.Token))
+
+	id, err := strconv.Atoi(context.Param("id"))
+	if err != nil {
+		return context.NoContent(http.StatusNotFound)
+	}
+
+	user, err := controller.Interactor.Get(sender, id)
+	if err != nil {
+		log.Println(err)
+		switch e := err.(type) {
+		case *usecase.NotPermittedError:
+			return context.String(http.StatusForbidden, e.Msg)
+		default:
+			return context.NoContent(http.StatusInternalServerError)
+		}
+	}
+	return context.JSON(http.StatusOK, user)
 }
 
 func (controller *UserController) Create(context echo.Context) error {

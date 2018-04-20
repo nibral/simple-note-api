@@ -10,8 +10,16 @@ type UserInteractor struct {
 	UserRepository UserRepositoryInterface
 }
 
-func (interactor *UserInteractor) Users(sender domain.User) ([]domain.User, error) {
+func (interactor *UserInteractor) List(sender domain.User) ([]domain.User, error) {
 	return interactor.UserRepository.FindAll()
+}
+
+func (interactor *UserInteractor) Get(sender domain.User, id int) (domain.User, error) {
+	if !sender.Admin && sender.ID != id {
+		return domain.User{}, &NotPermittedError{}
+	}
+
+	return interactor.UserRepository.FindByID(id)
 }
 
 func (interactor *UserInteractor) Create(sender domain.User, param domain.User) (domain.User, error) {

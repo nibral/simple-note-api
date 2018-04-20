@@ -26,7 +26,7 @@ var senderAdmin = domain.User{
 }
 
 func TestUserController_Index(t *testing.T) {
-	json := `[{"id":1,"name":"foo","admin":true},{"id":2,"name":"bar","admin":false},{"id":3,"name":"baz","admin":false}]`
+	expected := `[{"id":1,"name":"foo","admin":true},{"id":2,"name":"bar","admin":false},{"id":3,"name":"baz","admin":false}]`
 
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
@@ -47,19 +47,49 @@ func TestUserController_Index(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	if rec.Code != http.StatusOK {
 		t.Fatalf("unexpected status: %v", rec.Code)
 	}
+	if rec.Body.String() != expected {
+		t.Fatalf("unexpected json response: %v", rec.Body.String())
+	}
+}
 
-	if rec.Body.String() != json {
+func TestUserController_Get(t *testing.T) {
+	expected := `{"id":1,"name":"foo","admin":true}`
+
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["id"] = float64(senderAdmin.ID)
+	claims["name"] = senderAdmin.Name
+	claims["admin"] = senderAdmin.Admin
+	claims["exp"] = time.Now().Add(1 * time.Minute).Unix()
+
+	e := echo.New()
+	req := httptest.NewRequest(echo.GET, "/", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.SetPath("/v1/users/:id")
+	c.Set("user", token)
+	c.SetParamNames("id")
+	c.SetParamValues("1")
+
+	err := userController.Get(c)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rec.Code != http.StatusOK {
+		t.Fatalf("unexpected status: %v", rec.Code)
+	}
+	if rec.Body.String() != expected {
 		t.Fatalf("unexpected json response: %v", rec.Body.String())
 	}
 }
 
 func TestUserController_Create(t *testing.T) {
 	paramJson := `{"name":"qux","password":"password"}`
-	userJson := `{"id":4,"name":"qux","admin":false}`
+	expected := `{"id":4,"name":"qux","admin":false}`
 
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
@@ -84,11 +114,11 @@ func TestUserController_Create(t *testing.T) {
 	if rec.Code != http.StatusCreated {
 		t.Fatalf("unexpected status: %v", rec.Code)
 	}
-	if rec.Body.String() != userJson {
+	if rec.Body.String() != expected {
 		t.Fatalf("unexpected json response: %v", rec.Body.String())
 	}
 
-	users, err := userController.Interactor.Users(senderAdmin)
+	users, err := userController.Interactor.List(senderAdmin)
 
 	if len(users) != 4 {
 		t.Fatalf("number of users expected 4, but got %v", len(users))
@@ -97,7 +127,7 @@ func TestUserController_Create(t *testing.T) {
 
 func TestUserController_Update(t *testing.T) {
 	paramJson := `{"name":"bar-bar","password":"","admin":true}`
-	userJson := `{"id":2,"name":"bar-bar","admin":true}`
+	expected := `{"id":2,"name":"bar-bar","admin":true}`
 
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
@@ -124,11 +154,11 @@ func TestUserController_Update(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Fatalf("unexpected status: %v", rec.Code)
 	}
-	if rec.Body.String() != userJson {
+	if rec.Body.String() != expected {
 		t.Fatalf("unexpected json response: %v", rec.Body.String())
 	}
 
-	users, err := userController.Interactor.Users(senderAdmin)
+	users, err := userController.Interactor.List(senderAdmin)
 
 	if len(users) != 4 {
 		t.Fatalf("number of users expected 4, but got %v", len(users))

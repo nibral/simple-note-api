@@ -21,8 +21,8 @@ var userInteractor = UserInteractor{
 	UserRepository: &MockUserRepository{},
 }
 
-func TestUserInteractor_Users(t *testing.T) {
-	actual, err := userInteractor.Users(senderAdmin)
+func TestUserInteractor_List(t *testing.T) {
+	actual, err := userInteractor.List(senderAdmin)
 
 	if err != nil {
 		t.Fatal(err)
@@ -35,7 +35,53 @@ func TestUserInteractor_Users(t *testing.T) {
 	}
 }
 
-func TestUserInteractor_Add(t *testing.T) {
+func TestUserInteractor_Get(t *testing.T) {
+	expected1 := domain.User{
+		ID:    1,
+		Name:  "foo",
+		Admin: true,
+	}
+
+	actual1, err1 := userInteractor.Get(senderAdmin, 1)
+
+	if err1 != nil {
+		t.Fatal(err1)
+	}
+	actual1.Password = ""
+	if !reflect.DeepEqual(actual1, expected1) {
+		t.Fatalf("unexpeted user: expected %+v, actual %+v", expected1, actual1)
+	}
+
+	expected2 := domain.User{
+		ID:    2,
+		Name:  "bar",
+		Admin: false,
+	}
+
+	actual2, err2 := userInteractor.Get(senderUser, 2)
+
+	if err2 != nil {
+		t.Fatal(err2)
+	}
+	actual2.Password = ""
+	if !reflect.DeepEqual(actual2, expected2) {
+		t.Fatalf("unexpeted user: expected %+v, actual %+v", expected2, actual2)
+	}
+
+	actual3, err3 := userInteractor.Get(senderUser, 3)
+
+	if err3 == nil {
+		t.Fatalf("user read without admin privileges: %+v", actual3)
+	}
+	switch err3.(type) {
+	case *NotPermittedError:
+		break
+	default:
+		t.Fatal(err2)
+	}
+}
+
+func TestUserInteractor_Create(t *testing.T) {
 	param := domain.User{
 		Name:     "qux",
 		Password: "password",
