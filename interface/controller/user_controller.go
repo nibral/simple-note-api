@@ -125,3 +125,27 @@ func (controller *UserController) Update(context echo.Context) error {
 
 	return context.JSON(http.StatusOK, user)
 }
+
+func (controller *UserController) Delete(context echo.Context) error {
+	sender := ParseToken(context.Get("user").(*jwt.Token))
+
+	id, err := strconv.Atoi(context.Param("id"))
+	if err != nil {
+		return context.NoContent(http.StatusNotFound)
+	}
+
+	err = controller.Interactor.Delete(sender, id)
+	if err != nil {
+		log.Println(err)
+		switch e := err.(type) {
+		case *usecase.NotPermittedError:
+			return context.String(http.StatusForbidden, e.Msg)
+		case *usecase.InvalidParameterError:
+			return context.String(http.StatusBadRequest, e.Msg)
+		default:
+			return context.NoContent(http.StatusInternalServerError)
+		}
+	}
+
+	return context.NoContent(http.StatusOK)
+}

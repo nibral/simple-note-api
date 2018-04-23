@@ -63,3 +63,7 @@ func (repository *UserRepository) Update(id int, user domain.User) (domain.User,
 	err := repository.DatabaseHandler.UpdateUser(id, user)
 	return user, err
 }
+
+func (repository *UserRepository) Delete(id int) error {
+	return repository.DatabaseHandler.DeleteUser(id)
+}

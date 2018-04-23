@@ -164,3 +164,37 @@ func TestUserController_Update(t *testing.T) {
 		t.Fatalf("number of users expected 4, but got %v", len(users))
 	}
 }
+
+func TestUserController_Delete(t *testing.T) {
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["id"] = float64(senderAdmin.ID)
+	claims["name"] = senderAdmin.Name
+	claims["admin"] = senderAdmin.Admin
+	claims["exp"] = time.Now().Add(1 * time.Minute).Unix()
+
+	e := echo.New()
+	req := httptest.NewRequest(echo.DELETE, "/", nil)
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.SetPath("/v1/users/:id")
+	c.Set("user", token)
+	c.SetParamNames("id")
+	c.SetParamValues("2")
+
+	err := userController.Delete(c)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rec.Code != http.StatusOK {
+		t.Fatalf("unexpected status: %v", rec.Code)
+	}
+
+	users, err := userController.Interactor.List(senderAdmin)
+
+	if len(users) != 3 {
+		t.Fatalf("number of users expected 3, but got %v", len(users))
+	}
+}

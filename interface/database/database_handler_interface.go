@@ -11,4 +11,5 @@ type HandlerInterface interface {
 	GetUserCountByName(name string) (int, error)
 	PutUser(user domain.User) error
 	UpdateUser(id int, user domain.User) error
+	DeleteUser(id int) error
 }

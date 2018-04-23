@@ -61,3 +61,14 @@ func (_ MockUserRepository) Update(id int, user domain.User) (domain.User, error
 
 	return domain.User{}, fmt.Errorf("user id %v doesn't exists", user.ID)
 }
+
+func (_ MockUserRepository) Delete(id int) error {
+	for i, v := range users {
+		if v.ID == id {
+			users = append(users[:i], users[i+1:]...)
+			return nil
+		}
+	}
+
+	return fmt.Errorf("user id %v doesn't exists", id)
+}

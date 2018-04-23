@@ -87,19 +87,46 @@ func TestUserRepository_Add(t *testing.T) {
 }
 
 func TestUserRepository_Update(t *testing.T) {
-	expected := domain.User{
+	expected1 := domain.User{
 		ID:       1,
 		Name:     "foo-ooo",
 		Password: "p@ssw0rd",
 		Admin:    true,
 	}
 
-	actual, err := userRepository.Update(1, expected)
+	actual1, err1 := userRepository.Update(1, expected1)
 
-	if err != nil {
-		t.Fatal(err)
+	if err1 != nil {
+		t.Fatal(err1)
 	}
-	if !reflect.DeepEqual(actual, expected) {
-		t.Fatalf("unexpected updated user: expected %+v, actual %+v", expected, actual)
+	if !reflect.DeepEqual(actual1, expected1) {
+		t.Fatalf("unexpected updated user: expected %+v, actual %+v", expected1, actual1)
+	}
+
+	expected2 := domain.User{
+		ID:       9,
+		Name:     "bar-rrr",
+		Password: "p@ssw0rd",
+		Admin:    false,
+	}
+
+	actual2, err2 := userRepository.Update(9, expected2)
+
+	if err2 == nil {
+		t.Fatalf("updated user by invalid user id = 9: %+v", actual2)
+	}
+}
+
+func TestUserRepository_Delete(t *testing.T) {
+	err1 := userRepository.Delete(4)
+
+	if err1 != nil {
+		t.Fatal(err1)
+	}
+
+	err2 := userRepository.Delete(9)
+
+	if err2 == nil {
+		t.Fatalf("deleted user by invalid user id: %+v", 9)
 	}
 }

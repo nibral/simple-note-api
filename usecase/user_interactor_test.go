@@ -192,3 +192,22 @@ func TestUserInteractor_Update(t *testing.T) {
 		t.Fatal(err5)
 	}
 }
+
+func TestUserInteractor_Delete(t *testing.T) {
+	err1 := userInteractor.Delete(senderAdmin, 3)
+	if err1 != nil {
+		t.Fatal(err1)
+	}
+
+	err2 := userInteractor.Delete(senderUser, 2)
+	if err2 == nil {
+		t.Fatalf("user deleted without admin privileges: user id = 2")
+	}
+	switch e := err2.(type) {
+	case *NotPermittedError:
+		t.Log(e.Msg)
+		break
+	default:
+		t.Fatal(err2)
+	}
+}

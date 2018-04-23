@@ -80,3 +80,14 @@ func (_ *MockDatabaseHandler) UpdateUser(id int, user domain.User) error {
 
 	return fmt.Errorf("user id %v doesn't exists", user.ID)
 }
+
+func (_ *MockDatabaseHandler) DeleteUser(id int) error {
+	for i, v := range users {
+		if v.ID == id {
+			users = append(users[:i], users[i+1:]...)
+			return nil
+		}
+	}
+
+	return fmt.Errorf("user id %v doesn't exists", id)
+}

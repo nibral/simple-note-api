@@ -22,6 +22,7 @@ func NewRouter(config domain.Config) *echo.Echo {
 	users.GET("/:id", userController.Get)
 	users.POST("", userController.Create)
 	users.POST("/:id", userController.Update)
+	users.DELETE("/:id", userController.Delete)
 
 	return router
 }

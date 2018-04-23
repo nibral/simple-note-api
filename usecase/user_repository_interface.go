@@ -8,4 +8,5 @@ type UserRepositoryInterface interface {
 	FindByName(name string) (domain.User, error)
 	Add(user domain.User) (domain.User, error)
 	Update(id int, user domain.User) (domain.User, error)
+	Delete(id int) error
 }

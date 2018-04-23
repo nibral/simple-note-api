@@ -87,3 +87,9 @@ func (database *DynamoDBHandler) UpdateUser(id int, user domain.User) error {
 
 	return err
 }
+
+func (database *DynamoDBHandler) DeleteUser(id int) error {
+	err := database.UserTable.Delete("id", id).Run()
+
+	return err
+}

@@ -87,3 +87,20 @@ func (interactor *UserInteractor) Update(sender domain.User, id int, param domai
 
 	return interactor.UserRepository.Update(id, param)
 }
+
+func (interactor *UserInteractor) Delete(sender domain.User, id int) error {
+	if !sender.Admin {
+		return &NotPermittedError{}
+	}
+
+	// get stored user
+	idUser, err := interactor.UserRepository.FindByID(id)
+	if err != nil {
+		return err
+	}
+	if idUser.ID == 0 {
+		return &InvalidParameterError{"Specified user doesn't exists"}
+	}
+
+	return interactor.UserRepository.Delete(id)
+}
